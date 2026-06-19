@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservas Backup</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body>
+
+<div id="app">
+
+  <creen" class="screen active">
+    <h2>Login</h2>
+    <input id="login-user" placeholder="Usuario">
+    <input id="login-pass" type="password" placeholder="Contraseña">
+    <button onclick="doLogin()">Entrar</button>
+  </div>
+
+  <!-- APP -->
+  <div id="app-screen" class="screen">
+    <h2>Reservas</h2>
+
+    <input type="date" id="req-date">
+    <button onclick="submitRequest()">Agregar</button>
+
+    <div id="req-list"></div>
+
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
