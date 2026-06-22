@@ -1,36 +1,28 @@
 const API_URL = "https://reservas-aya-ccss-orbe.onrender.com";
 
-// ============================================================
-//  USUARIOS DEL SISTEMA
-// ============================================================
+// ===============================
+// USUARIOS
+// ===============================
 const USERS = {
   dvalverde: {
     name: 'Dennis Valverde',
     role: 'Backup',
-    project: 'vacaciones',
-    chipClass: 'orange',
-    canDirectAdd: true
+    project: 'vacaciones'
   },
   deiby: {
     name: 'Deiby Campos',
-    role: 'Coordinador CCSS',
-    project: 'ccss',
-    chipClass: '',
-    canDirectAdd: false
+    role: 'CCSS',
+    project: 'ccss'
   },
   sebastian: {
     name: 'Sebastián Madriz',
-    role: 'Coordinador AyA',
-    project: 'aya',
-    chipClass: 'green',
-    canDirectAdd: false
+    role: 'AyA',
+    project: 'aya'
   },
   lorna: {
     name: 'Lorna Vega',
-    role: 'Supervisora',
-    project: 'super',
-    chipClass: 'purple',
-    canDirectAdd: true
+    role: 'Admin',
+    project: 'super'
   }
 };
 
@@ -41,18 +33,13 @@ const DEFAULT_PASSWORDS = {
   lorna: 'super2024'
 };
 
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const DOWS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-
+// ===============================
 let currentUser = null;
 let requests = [];
-let viewYear = new Date().getFullYear();
-let viewMonth = new Date().getMonth();
-const today = new Date();
 
-// ============================================================
-// PASSWORDS (API)
-// ============================================================
+// ===============================
+// PASSWORDS API
+// ===============================
 async function getStoredPassword(username) {
   try {
     const res = await fetch(`${API_URL}/passwords/${username}`);
@@ -65,62 +52,70 @@ async function getStoredPassword(username) {
 async function savePassword(username, password) {
   await fetch(`${API_URL}/passwords`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ username, password })
   });
 }
 
-// ============================================================
+// ===============================
 // LOGIN
-// ============================================================
+// ===============================
 async function doLogin() {
-  const username = document.getElementById('login-user').value.trim().toLowerCase();
+  const user = document.getElementById('login-user').value.trim().toLowerCase();
   const pass = document.getElementById('login-pass').value;
 
-  const stored = await getStoredPassword(username);
+  if (!USERS[user]) {
+    alert("Usuario no existe");
+    return;
+  }
+
+  const stored = await getStoredPassword(user);
 
   let valid = false;
 
   if (stored) {
     valid = stored.password === pass;
   } else {
-    valid = DEFAULT_PASSWORDS[username] === pass;
+    valid = DEFAULT_PASSWORDS[user] === pass;
   }
 
   if (!valid) {
-    alert("Credenciales incorrectas");
+    alert("Contraseña incorrecta");
     return;
   }
 
-  currentUser = username;
-  showApp();
-}
+  currentUser = user;
 
-// ============================================================
-// APP
-// ============================================================
-async function showApp() {
+  document.getElementById('nav-user').textContent = USERS[user].name;
+
   document.getElementById('login-screen').classList.remove('active');
   document.getElementById('app-screen').classList.add('active');
 
-  await loadRequests();
+  loadRequests();
 }
 
-// ============================================================
-// REQUESTS API
-// ============================================================
+function doLogout() {
+  currentUser = null;
+  location.reload();
+}
+
+// ===============================
+// RESERVAS API
+// ===============================
 async function loadRequests() {
-  try {
-    const res = await fetch(`${API_URL}/reservas`);
-    requests = await res.json();
-  } catch {
-    requests = [];
-  }
+  const res = await fetch(`${API_URL}/reservas`);
+  requests = await res.json();
   render();
 }
 
 async function submitRequest() {
-  const dateVal = document.getElementById('req-date').value;
+  const date = document.getElementById('req-date').value;
+  const note = document.getElementById('req-note').value;
+
+  if (!date) {
+    alert("Seleccioná fecha");
+    return;
+  }
 
   const u = USERS[currentUser];
 
@@ -128,16 +123,19 @@ async function submitRequest() {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
-      fecha: dateVal,
+      fecha: date,
       proyecto: u.project,
       usuario: currentUser,
       nombre: u.name,
-      nota: "",
+      nota: note,
       estado: "pending"
     })
   });
 
-  await loadRequests();
+  document.getElementById('req-date').value = "";
+  document.getElementById('req-note').value = "";
+
+  loadRequests();
 }
 
 async function updateStatus(id, estado) {
@@ -146,25 +144,40 @@ async function updateStatus(id, estado) {
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ estado })
   });
+
+  loadRequests();
 }
 
 async function deleteRequest(id) {
   await fetch(`${API_URL}/reservas/${id}`, {
     method: "DELETE"
   });
-  await loadRequests();
+
+  loadRequests();
 }
 
-// ============================================================
-// UI SIMPLE
-// ============================================================
+// ===============================
+// RENDER UI
+// ===============================
 function render() {
   const list = document.getElementById('req-list');
   list.innerHTML = "";
 
   requests.forEach(r => {
-    const el = document.createElement('div');
-    el.textContent = `${r.fecha} - ${r.nombre} (${r.proyecto})`;
-    list.appendChild(el);
+
+    const item = document.createElement('div');
+
+    item.innerHTML = `
+      <strong>${r.fecha}</strong> - ${r.nombre} (${r.proyecto})
+      <br>
+      Estado: ${r.estado}
+      <br>
+      <button onclick="updateStatus(${r.id}, 'approved')">Aprobar</button>
+      <button onclick="updateStatus(${r.id}, 'rejected')">Rechazar</button>
+      <button onclick="deleteRequest(${r.id})">Eliminar</button>
+      <hr>
+    `;
+
+    list.appendChild(item);
   });
 }
