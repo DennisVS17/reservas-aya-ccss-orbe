@@ -1,37 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reservas Backup</title>
-  <link rel="stylesheet" href="style.css"/>
+
+  <link rel="stylesheet" href="./style.css"/>
 </head>
 
 <body>
+  <div id="app">
 
-<div id="app">
+    <!-- LOGIN -->
+    <div id="login-screen" class="screen active">
+      <div class="login-wrap">
+        <h1>Iniciar sesión</h1>
 
-  <creen" class="screen active">
-    <h2>Login</h2>
-    <input id="login-user" placeholder="Usuario">
-    <input id="login-pass" type="password" placeholder="Contraseña">
-    <button onclick="doLogin()">Entrar</button>
+        <input type="text" id="login-user" placeholder="usuario"/>
+        <input type="password" id="login-pass" placeholder="contraseña"/>
+
+        <button class="btn-primary" onclick="doLogin()">Entrar</button>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app-screen" class="screen">
+
+      <nav class="navbar">
+        <span id="nav-user"></span>
+        <button onclick="doLogout()">Salir</button>
+      </nav>
+
+      <div class="container">
+
+        <!-- CALENDARIO -->
+        <h2 id="cal-title"></h2>
+        <div id="cal-grid"></div>
+
+        <!-- FORM -->
+        <div class="card">
+          <input type="date" id="req-date"/>
+          <input type="text" id="req-note" placeholder="Nota"/>
+          <button onclick="submitRequest()">Agregar</button>
+        </div>
+
+        <!-- LISTA -->
+        <div class="card">
+          <h3>Solicitudes</h3>
+          <div id="req-list"></div>
+        </div>
+
+      </div>
+
+    </div>
   </div>
 
-  <!-- APP -->
-  <div id="app-screen" class="screen">
-    <h2>Reservas</h2>
-
-    <input type="date" id="req-date">
-    <button onclick="submitRequest()">Agregar</button>
-
-    <div id="req-list"></div>
-
-  </div>
-
-</div>
-
-<script src="app.js"></script>
-
+  <script src="./app.js"></script>
 </body>
 </html>
